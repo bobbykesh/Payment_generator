@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // NEW: Handle Profile Image Upload
     profileImageInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
+        const file = event.target.files[0]; // Corrected: use files[0]
         if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -94,17 +94,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const circleCenterY = 120;
 
         if (loadedProfileImage) {
-            // Calculate scale to make the image fill the circular area
-            const imgActualWidth = loadedProfileImage.width;
-            const imgActualHeight = loadedProfileImage.height;
+            const imageAspectRatio = loadedProfileImage.width / loadedProfileImage.height;
+            const targetAspectRatio = 1; // We want to fit it within a circle (square aspect)
+            let sourceX = 0;
+            let sourceY = 0;
+            let sourceWidth = loadedProfileImage.width;
+            let sourceHeight = loadedProfileImage.height;
+            let drawWidth = circleRadius * 2;
+            let drawHeight = circleRadius * 2;
+            let drawX = circleCenterX - circleRadius;
+            let drawY = circleCenterY - circleRadius;
 
-            const scale = Math.max((circleRadius * 2) / imgActualWidth, (circleRadius * 2) / imgActualHeight);
-            const scaledWidth = imgActualWidth * scale;
-            const scaledHeight = imgActualHeight * scale;
-
-            // Calculate position to center the scaled image within the circle's bounding box
-            const imgDrawX = circleCenterX - (scaledWidth / 2);
-            const imgDrawY = circleCenterY - (scaledHeight / 2);
+            // Determine how to crop the source image to fit a square
+            if (imageAspectRatio > targetAspectRatio) { // Image is wider than tall, crop horizontally
+                sourceWidth = loadedProfileImage.height * targetAspectRatio;
+                sourceX = (loadedProfileImage.width - sourceWidth) / 2;
+            } else if (imageAspectRatio < targetAspectRatio) { // Image is taller than wide, crop vertically
+                sourceHeight = loadedProfileImage.width / targetAspectRatio;
+                sourceY = (loadedProfileImage.height - sourceHeight) / 2;
+            }
 
             ctx.save(); // Save the current canvas state before applying the clip
 
@@ -115,7 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.clip(); // Apply the clipping path
 
             // Draw the image (it will be clipped to the circular shape)
-            ctx.drawImage(loadedProfileImage, imgDrawX, imgDrawY, scaledWidth, scaledHeight);
+            // ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+            ctx.drawImage(loadedProfileImage, sourceX, sourceY, sourceWidth, sourceHeight, drawX, drawY, drawWidth, drawHeight);
 
             ctx.restore(); // Restore the canvas state (removes the clipping path)
 
@@ -137,21 +146,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Recipient Name (Beneficiary Name)
         ctx.font = fontName;
         ctx.fillStyle = textColorDark;
+        ctx.textAlign = 'center'; // Ensure text remains centered
         ctx.fillText(data.recipient_name, imgWidth / 2, 225);
 
         // Payment to cash tag
         ctx.font = fontPaymentTo;
         ctx.fillStyle = textColorLight;
+        ctx.textAlign = 'center'; // Ensure text remains centered
         ctx.fillText(`Payment to $${data.recipient_tag}`, imgWidth / 2, 275);
 
         // --- Amount and Date ---
         const amountText = `$${parseFloat(data.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         ctx.font = fontAmount;
         ctx.fillStyle = textColorLight; // Amount color is textColorLight
+        ctx.textAlign = 'center'; // Ensure text remains centered
         ctx.fillText(amountText, imgWidth / 2, 390);
 
         ctx.font = fontDate;
         ctx.fillStyle = textColorLight;
+        ctx.textAlign = 'center'; // Ensure text remains centered
         ctx.fillText(data.date_time, imgWidth / 2, 455);
 
         // --- Status Message (Conditional) ---
@@ -165,10 +178,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             ctx.font = 'bold 36px Arial, sans-serif';
             ctx.fillStyle = whiteColor;
+            ctx.textAlign = 'center'; // Ensure text remains centered
             ctx.fillText("!", exclamationX, exclamationY + 3);
 
             ctx.font = fontStatusMsg;
             ctx.fillStyle = textColorDark;
+            ctx.textAlign = 'center'; // Ensure text remains centered
             const part1 = "This payment was canceled for your protection";
             const part2 = "and was refunded";
 
@@ -177,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Bottom Details ---
-        ctx.textAlign = 'left';
+        ctx.textAlign = 'left'; // Align labels to the left
         ctx.textBaseline = 'alphabetic';
 
         const leftX = 100;
@@ -195,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillText("From", leftX, startYBottom + 4 * lineHeight);
 
         // Right aligned values (Color to textColorLight)
-        ctx.textAlign = 'right';
+        ctx.textAlign = 'right'; // Align values to the right
         ctx.font = fontValue;
         ctx.fillStyle = textColorLight;
         ctx.fillText(amountText, rightX, startYBottom);
