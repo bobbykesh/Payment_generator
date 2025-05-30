@@ -5,71 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Receipt Generator</title>
     <link rel="stylesheet" href="style.css">
-    </head>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
 <body>
     <div class="container">
         <h1>Generate Payment Receipt Image</h1>
 
-        <form id="imageForm">
-            <div class="form-group">
-                <label for="recipient_name">Beneficiary Name (Top Name):</label>
-                <input type="text" id="recipient_name" name="recipient_name" required value="Mekhia Dye">
+        <div class="form-and-preview">
+            <form id="imageForm" class="input-form">
+                <div class="form-section">
+                    <h2>Recipient Details</h2>
+                    <div class="form-group">
+                        <label for="recipient_name">Beneficiary Name:</label>
+                        <input type="text" id="recipient_name" name="recipient_name" required value="Mekhia Dye" placeholder="e.g., Mekhia Dye">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recipient_tag">Cash Tag:</label>
+                        <input type="text" id="recipient_tag" name="recipient_tag" required value="khiaBoo826" placeholder="e.g., khiaBoo826">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Payment Details</h2>
+                    <div class="form-group">
+                        <label for="amount">Amount ($):</label>
+                        <input type="number" id="amount" name="amount" step="0.01" required value="1000.00" placeholder="e.g., 1000.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date_time">Date & Time:</label>
+                        <input type="text" id="date_time" name="date_time" required value="May 21 at 12:52 pm" placeholder="e.g., May 21 at 12:52 pm">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status">Payment Status:</label>
+                        <select id="status" name="status">
+                            <option value="successful">Successful</option>
+                            <option value="canceled">Canceled</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="statusMessageGroup">
+                        <label for="status_message">Canceled Message:</label>
+                        <textarea id="status_message" name="status_message" rows="3" placeholder="This payment was canceled for your protection and was refunded"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Bank & Sender Info</h2>
+                    <div class="form-group">
+                        <label for="source_bank">Initiating Bank Name:</label>
+                        <input type="text" id="source_bank" name="source_bank" required value="U.S. Bank" placeholder="e.g., U.S. Bank">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="identifier">Identifier:</label>
+                        <input type="text" id="identifier" name="identifier" required value="#180F0K" placeholder="e.g., #180F0K">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sender_name">Sender Name:</label>
+                        <input type="text" id="sender_name" name="sender_name" required value="Daniel Jacobs" placeholder="e.g., Daniel Jacobs">
+                    </div>
+                </div>
+
+                <button type="submit" class="generate-btn">Generate Image</button>
+            </form>
+
+            <div class="output-section">
+                <h2>Generated Image Preview</h2>
+                <canvas id="paymentCanvas" width="700" height="1000"></canvas>
+                <button id="downloadBtn" class="download-btn" style="display: none;">Download Image</button>
             </div>
-
-            <div class="form-group">
-                <label for="recipient_tag">Cash Tag (e.g., khiaBoo826):</label>
-                <input type="text" id="recipient_tag" name="recipient_tag" required value="khiaBoo826">
-            </div>
-
-            <div class="form-group">
-                <label for="amount">Amount ($):</label>
-                <input type="number" id="amount" name="amount" step="0.01" required value="1000.00">
-            </div>
-
-            <div class="form-group">
-                <label for="date_time">Date & Time (e.g., May 21 at 12:52 pm):</label>
-                <input type="text" id="date_time" name="date_time" required value="May 21 at 12:52 pm">
-            </div>
-
-            <div class="form-group">
-                <label for="status">Payment Status:</label>
-                <select id="status" name="status">
-                    <option value="successful">Successful</option>
-                    <option value="canceled">Canceled</option>
-                </select>
-            </div>
-
-            <div class="form-group" id="statusMessageGroup" style="display: block;">
-                <label for="status_message">Canceled Message:</label>
-                <textarea id="status_message" name="status_message" rows="3">This payment was canceled for your protection and was refunded</textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="source_bank">Initiating Bank Name (Source):</label>
-                <input type="text" id="source_bank" name="source_bank" required value="U.S. Bank">
-            </div>
-
-            <div class="form-group">
-                <label for="identifier">Identifier (e.g., #180F0K):</label>
-                <input type="text" id="identifier" name="identifier" required value="#180F0K">
-            </div>
-
-            <div class="form-group">
-                <label for="sender_name">Sender Name:</label>
-                <input type="text" id="sender_name" name="sender_name" required value="Daniel Jacobs">
-            </div>
-
-            <button type="submit" class="generate-btn">Generate Image</button>
-        </form>
-
-        <div class="output-section">
-            <h2>Generated Image Preview:</h2>
-            <canvas id="paymentCanvas" width="700" height="1000"></canvas>
-            <button id="downloadBtn" class="download-btn" style="display: none;">Download Image</button>
         </div>
     </div>
 
     <script src="script.js"></script>
 </body>
 </html>
-
