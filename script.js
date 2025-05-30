@@ -5,19 +5,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadBtn = document.getElementById('downloadBtn');
 
     const statusSelect = document.getElementById('status');
-    const statusMessageGroup = document.getElementById('statusMessageGroup');
-    const statusMessageInput = document.getElementById('status_message');
-
-    // NEW: Image upload input and a variable to store the loaded image
     const profileImageInput = document.getElementById('profile_image');
-    let uploadedProfileImage = null; // This will hold the Image object
+    let uploadedProfileImage = null;
+
+    // --- Default Canceled Message ---
+    // This message will be used whenever the status is set to 'canceled'
+    const defaultCanceledMessage = "This payment was canceled for your protection and was refunded";
 
     // --- Color Definitions ---
-    const bgColor = '#FFFFFF'; // White
-    const textColorDark = '#333333'; // Dark grey for primary text
-    const textColorLight = '#808080'; // Medium grey for secondary text/labels
-    const redColor = '#E74C3C'; // A slightly softer red
-    const whiteColor = '#FFFFFF'; // Pure white
+    const bgColor = '#FFFFFF';
+    const textColorDark = '#333333';
+    const textColorLight = '#808080';
+    const redColor = '#E74C3C';
+    const whiteColor = '#FFFFFF';
 
     // --- Font Definitions ---
     const fontCircleChar = 'bold 75px "Helvetica Neue", Helvetica, Arial, sans-serif';
@@ -25,21 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const fontPaymentTo = '30px "Helvetica Neue", Helvetica, Arial, sans-serif';
     const fontAmount = 'bold 70px "Helvetica Neue", Helvetica, Arial, sans-serif';
     const fontDate = '28px "Helvetica Neue", Helvetica, Arial, sans-serif';
-    const fontStatusMsg = '28px "Helvetica Neue", Helvetica, Arial, sans-serif';
+    const fontStatusMsg = '28px "Helvetica Neue", Helvetica, Arial, sans-serif'; // Still used for default message
     const fontLabel = '24px "Helvetica Neue", Helvetica, Arial, sans-serif';
     const fontValue = '24px "Helvetica Neue", Helvetica, Arial, sans-serif';
 
-    // Function to show/hide the status message input based on status selection
-    const toggleStatusMessageInput = () => {
-        if (statusSelect.value === 'canceled') {
-            statusMessageGroup.style.display = 'block';
-            statusMessageInput.setAttribute('required', 'required');
-        } else {
-            statusMessageGroup.style.display = 'none';
-            statusMessageInput.removeAttribute('required');
-            statusMessageInput.value = '';
-        }
-    };
+    // The toggleStatusMessageInput function is no longer needed as the input is removed
+    // We will no longer dynamically show/hide a textarea for the message.
 
     // Event listener for profile image upload
     profileImageInput.addEventListener('change', (event) => {
@@ -49,17 +40,26 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
-                    uploadedProfileImage = img; // Store the loaded image object
-                    // Re-draw the image immediately after a new profile image is loaded
-                    form.dispatchEvent(new Event('submit'));
+                    uploadedProfileImage = img;
+                    form.dispatchEvent(new Event('submit')); // Re-draw
                 };
-                img.src = e.target.result; // Set image source to Data URL
+                img.onerror = () => {
+                    console.error("Failed to load image.");
+                    uploadedProfileImage = null;
+                    form.dispatchEvent(new Event('submit')); // Re-draw
+                };
+                img.src = e.target.result;
             };
-            reader.readAsDataURL(file); // Read file as Data URL
+            reader.readAsDataURL(file);
         } else {
-            uploadedProfileImage = null; // Clear image if no file selected
+            uploadedProfileImage = null;
             form.dispatchEvent(new Event('submit')); // Re-draw
         }
+    });
+
+    // Event listener for status change (to trigger immediate re-draw if 'canceled' is selected)
+    statusSelect.addEventListener('change', () => {
+        form.dispatchEvent(new Event('submit'));
     });
 
 
@@ -78,41 +78,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const circleCenterX = imgWidth / 2;
         const circleCenterY = 120;
 
-        if (uploadedProfileImage) {
-            // If an image is uploaded, draw it in the circle
-            ctx.save(); // Save the current canvas state
+        if (uploadedProfileImage && uploadedProfileImage.complete) {
+            ctx.save();
             ctx.beginPath();
             ctx.arc(circleCenterX, circleCenterY, circleRadius, 0, Math.PI * 2);
-            ctx.clip(); // Clip to the circular path
+            ctx.clip();
 
-            // Calculate position and size to fit the image within the circle
-            // Maintain aspect ratio, cover the circle
-            const imgAspect = uploadedProfileImage.width / uploadedProfileImage.height;
+            const imgRatio = uploadedProfileImage.width / uploadedProfileImage.height;
             const circleDiameter = circleRadius * 2;
-            let drawWidth = circleDiameter;
-            let drawHeight = circleDiameter;
-            let sx = 0; // Source X
-            let sy = 0; // Source Y
-            let sWidth = uploadedProfileImage.width; // Source Width
-            let sHeight = uploadedProfileImage.height; // Source Height
 
-            // Adjust source rectangle to crop image if aspect ratio doesn't match circle
-            if (uploadedProfileImage.width > uploadedProfileImage.height) { // Image is wider than tall
-                sWidth = uploadedProfileImage.height; // Crop width to match height
-                sx = (uploadedProfileImage.width - sWidth) / 2; // Center crop horizontally
-            } else if (uploadedProfileImage.height > uploadedProfileImage.width) { // Image is taller than wide
-                sHeight = uploadedProfileImage.width; // Crop height to match width
-                sy = (uploadedProfileImage.height - sHeight) / 2; // Center crop vertically
+            let drawX, drawY, drawWidth, drawHeight;
+
+            if (imgRatio > 1) {
+                drawHeight = circleDiameter;
+                drawWidth = drawHeight * imgRatio;
+                drawX = circleCenterX - (drawWidth / 2);
+                drawY = circleCenterY - circleRadius;
+            } else {
+                drawWidth = circleDiameter;
+                drawHeight = drawWidth / imgRatio;
+                drawX = circleCenterX - circleRadius;
+                drawY = circleCenterY - (drawHeight / 2);
             }
 
-            ctx.drawImage(uploadedProfileImage,
-                          sx, sy, sWidth, sHeight, // Source rectangle
-                          circleCenterX - circleRadius, circleCenterY - circleRadius, // Destination X, Y
-                          circleDiameter, circleDiameter); // Destination Width, Height
-
-            ctx.restore(); // Restore the canvas state (undo the clipping)
+            ctx.drawImage(uploadedProfileImage, drawX, drawY, drawWidth, drawHeight);
+            ctx.restore();
         } else {
-            // Fallback: If no image uploaded, draw red circle with initial
             ctx.beginPath();
             ctx.arc(circleCenterX, circleCenterY, circleRadius, 0, Math.PI * 2);
             ctx.fillStyle = redColor;
@@ -147,7 +138,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillText(data.date_time, imgWidth / 2, 455);
 
         // --- Status Message (Conditional) ---
-        if (data.status === 'canceled' && data.status_message.trim() !== '') {
+        // Now using the defaultCanceledMessage directly
+        if (data.status === 'canceled') { // Check if status is 'canceled'
             const exclamationX = imgWidth / 2;
             const exclamationY = 550;
             ctx.beginPath();
@@ -161,12 +153,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             ctx.font = fontStatusMsg;
             ctx.fillStyle = textColorDark;
-            const statusParts = data.status_message.split('and');
+            // Use the defaultCanceledMessage directly
+            const statusParts = defaultCanceledMessage.split('and');
             if (statusParts.length > 1) {
                 ctx.fillText(statusParts[0].trim(), imgWidth / 2, 605);
                 ctx.fillText("and " + statusParts[1].trim(), imgWidth / 2, 645);
             } else {
-                ctx.fillText(data.status_message, imgWidth / 2, 605);
+                ctx.fillText(defaultCanceledMessage, imgWidth / 2, 605);
             }
         }
 
@@ -211,12 +204,11 @@ document.addEventListener('DOMContentLoaded', () => {
             amount: document.getElementById('amount').value,
             date_time: document.getElementById('date_time').value,
             status: document.getElementById('status').value,
-            status_message: document.getElementById('status_message').value,
+            // status_message is no longer read from input, it's determined by 'status'
             source_bank: document.getElementById('source_bank').value,
             identifier: document.getElementById('identifier').value,
             sender_name: document.getElementById('sender_name').value,
         };
-        // Pass the form data and trigger drawing
         drawImage(formData);
     });
 
@@ -231,6 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(a);
     });
 
-    // Initial draw on page load
+    // Initial draw on page load (now also sets initial status visibility)
     form.dispatchEvent(new Event('submit'));
 });
