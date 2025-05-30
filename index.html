@@ -30,7 +30,7 @@
                         <input type="file" id="profile_image" accept="image/*">
                         <small>Will be used in place of the red circle/initial.</small>
                     </div>
-                </div>
+                    </div>
 
                 <div class="form-section">
                     <h2>Payment Details</h2>
@@ -52,7 +52,11 @@
                         </select>
                     </div>
 
+                    <div class="form-group" id="statusMessageGroup">
+                        <label for="status_message">Canceled Message:</label>
+                        <textarea id="status_message" name="status_message" rows="3" placeholder="This payment was canceled for your protection and was refunded"></textarea>
                     </div>
+                </div>
 
                 <div class="form-section">
                     <h2>Bank & Sender Info</h2>
