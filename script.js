@@ -1,3 +1,5 @@
+// (This file remains the same as the one from the previous response)
+
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('imageForm');
     const canvas = document.getElementById('paymentCanvas');
@@ -8,25 +10,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusMessageGroup = document.getElementById('statusMessageGroup');
     const statusMessageInput = document.getElementById('status_message');
 
-    const profileImageInput = document.getElementById('profile_image');
-    let uploadedProfileImage = null; // This will hold the Image object once loaded
-
     // --- Color Definitions ---
-    const bgColor = '#FFFFFF';
-    const textColorDark = '#333333';
-    const textColorLight = '#808080';
-    const redColor = '#E74C3C';
-    const whiteColor = '#FFFFFF';
+    const bgColor = '#FFFFFF'; // White
+    const textColorDark = '#333333'; // Dark grey for primary text (e.g., recipient name, bold amount)
+    const textColorLight = '#808080'; // Medium grey for secondary text/labels (e.g., date, labels, values)
+    const redColor = '#E74C3C'; // A slightly softer red
+    const whiteColor = '#FFFFFF'; // Pure white
 
     // --- Font Definitions ---
-    const fontCircleChar = 'bold 75px "Helvetica Neue", Helvetica, Arial, sans-serif';
-    const fontName = 'bold 36px "Helvetica Neue", Helvetica, Arial, sans-serif';
-    const fontPaymentTo = '30px "Helvetica Neue", Helvetica, Arial, sans-serif';
-    const fontAmount = 'bold 70px "Helvetica Neue", Helvetica, Arial, sans-serif';
-    const fontDate = '28px "Helvetica Neue", Helvetica, Arial, sans-serif';
-    const fontStatusMsg = '28px "Helvetica Neue", Helvetica, Arial, sans-serif';
-    const fontLabel = '24px "Helvetica Neue", Helvetica, Arial, sans-serif';
-    const fontValue = '24px "Helvetica Neue", Helvetica, Arial, sans-serif';
+    const fontCircleChar = 'bold 75px "Helvetica Neue", Helvetica, Arial, sans-serif'; // For the character in circle
+    const fontName = 'bold 36px "Helvetica Neue", Helvetica, Arial, sans-serif'; // "Mekhia Dye"
+    const fontPaymentTo = '30px "Helvetica Neue", Helvetica, Arial, sans-serif'; // "Payment to $khiaBoo826"
+    const fontAmount = 'bold 70px "Helvetica Neue", Helvetica, Arial, sans-serif'; // "$1,000.00"
+    const fontDate = '28px "Helvetica Neue", Helvetica, Arial, sans-serif'; // "May 21 at 12:52 pm"
+    const fontStatusMsg = '28px "Helvetica Neue", Helvetica, Arial, sans-serif'; // "This payment was canceled..."
+    const fontLabel = '24px "Helvetica Neue", Helvetica, Arial, sans-serif'; // Labels (Amount, Source, etc.)
+    const fontValue = '24px "Helvetica Neue", Helvetica, Arial, sans-serif'; // Values on the right
 
     // Function to show/hide the status message input based on status selection
     const toggleStatusMessageInput = () => {
@@ -36,40 +35,18 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             statusMessageGroup.style.display = 'none';
             statusMessageInput.removeAttribute('required');
-            statusMessageInput.value = '';
+            statusMessageInput.value = ''; // Clear message if not canceled
         }
     };
 
-    // Event listener for profile image upload
-    profileImageInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    uploadedProfileImage = img; // Store the loaded image object
-                    // Re-draw the image immediately after a new profile image is loaded
-                    // This ensures the canvas is updated as soon as the image is ready.
-                    form.dispatchEvent(new Event('submit'));
-                };
-                img.onerror = () => { // Handle errors if image fails to load
-                    console.error("Failed to load image.");
-                    uploadedProfileImage = null; // Clear if error
-                    form.dispatchEvent(new Event('submit'));
-                };
-                img.src = e.target.result; // Set image source to Data URL
-            };
-            reader.readAsDataURL(file); // Read file as Data URL
-        } else {
-            uploadedProfileImage = null; // Clear image if no file selected
-            form.dispatchEvent(new Event('submit')); // Re-draw to show default initial
-        }
-    });
+    // Initial check and add event listener for status select
+    toggleStatusMessageInput();
+    statusSelect.addEventListener('change', toggleStatusMessageInput);
+
 
     // Main drawing function
     const drawImage = (data) => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // Always clear the canvas first
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const imgWidth = canvas.width;
         const imgHeight = canvas.height;
@@ -77,56 +54,21 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, imgWidth, imgHeight);
 
-        // --- Top Section: Profile Image/Initial and names ---
+        // --- Top Section: First alphabet in red circle and names ---
         const circleRadius = 60;
         const circleCenterX = imgWidth / 2;
         const circleCenterY = 120;
+        ctx.beginPath();
+        ctx.arc(circleCenterX, circleCenterY, circleRadius, 0, Math.PI * 2);
+        ctx.fillStyle = redColor;
+        ctx.fill();
 
-        if (uploadedProfileImage && uploadedProfileImage.complete) { // Check if image is loaded and complete
-            // --- Draw the uploaded image within the circle ---
-            ctx.save(); // Save the current canvas state (before clipping)
-            ctx.beginPath();
-            ctx.arc(circleCenterX, circleCenterY, circleRadius, 0, Math.PI * 2);
-            ctx.clip(); // Apply circular clipping mask
-
-            // Calculate draw parameters to make the image cover the circle while maintaining aspect ratio
-            const imgRatio = uploadedProfileImage.width / uploadedProfileImage.height;
-            const circleDiameter = circleRadius * 2;
-
-            let drawX, drawY, drawWidth, drawHeight;
-
-            // Determine if the image is wider or taller than the circle's square bounding box
-            // We want to scale to cover, then clip.
-            if (imgRatio > 1) { // Image is wider than it is tall
-                drawHeight = circleDiameter;
-                drawWidth = drawHeight * imgRatio;
-                drawX = circleCenterX - (drawWidth / 2);
-                drawY = circleCenterY - circleRadius;
-            } else { // Image is taller than it is wide, or square
-                drawWidth = circleDiameter;
-                drawHeight = drawWidth / imgRatio;
-                drawX = circleCenterX - circleRadius;
-                drawY = circleCenterY - (drawHeight / 2);
-            }
-
-            ctx.drawImage(uploadedProfileImage, drawX, drawY, drawWidth, drawHeight);
-            ctx.restore(); // Restore the canvas state (undo the clipping)
-        } else {
-            // Fallback: If no image uploaded or not loaded, draw red circle with initial
-            ctx.beginPath();
-            ctx.arc(circleCenterX, circleCenterY, circleRadius, 0, Math.PI * 2);
-            ctx.fillStyle = redColor;
-            ctx.fill();
-
-            const beneficiaryInitial = data.recipient_name ? data.recipient_name.charAt(0).toUpperCase() : '';
-            ctx.font = fontCircleChar;
-            ctx.fillStyle = whiteColor;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(beneficiaryInitial, circleCenterX, circleCenterY + 5);
-        }
-
-        // --- Remaining drawing code (unchanged) ---
+        const beneficiaryInitial = data.recipient_name ? data.recipient_name.charAt(0).toUpperCase() : '';
+        ctx.font = fontCircleChar;
+        ctx.fillStyle = whiteColor;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(beneficiaryInitial, circleCenterX, circleCenterY + 5);
 
         // Recipient Name (Beneficiary Name)
         ctx.font = fontName;
@@ -141,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Amount and Date ---
         const amountText = `$${parseFloat(data.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         ctx.font = fontAmount;
-        ctx.fillStyle = textColorLight;
+        ctx.fillStyle = textColorLight; // CHANGE: Amount color to textColorLight
         ctx.fillText(amountText, imgWidth / 2, 390);
 
         ctx.font = fontDate;
@@ -181,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const startYBottom = 750;
         const lineHeight = 40;
 
-        // Left aligned labels
+        // Left aligned labels (remain textColorLight as they were)
         ctx.font = fontLabel;
         ctx.fillStyle = textColorLight;
         ctx.fillText("Amount", leftX, startYBottom);
@@ -190,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillText("To", leftX, startYBottom + 3 * lineHeight);
         ctx.fillText("From", leftX, startYBottom + 4 * lineHeight);
 
-        // Right aligned values
+        // Right aligned values (Color to textColorLight)
         ctx.textAlign = 'right';
         ctx.font = fontValue;
         ctx.fillStyle = textColorLight;
@@ -232,7 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(a);
     });
 
-    // Initial setup and draw
-    toggleStatusMessageInput(); // Ensure status message visibility is correct on load
-    form.dispatchEvent(new Event('submit')); // Draw initial image
+    // Initial draw on page load
+    form.dispatchEvent(new Event('submit'));
 });
