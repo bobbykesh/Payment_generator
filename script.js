@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const fontPaymentTo = '30px "Helvetica Neue", Helvetica, Arial, sans-serif'; // "Payment to $khiaBoo826"
     const fontAmount = 'bold 70px "Helvetica Neue", Helvetica, Arial, sans-serif'; // "$1,000.00"
     const fontDate = '28px "Helvetica Neue", Helvetica, Arial, sans-serif'; // "May 21 at 12:52 pm"
-    const fontStatusMsg = '28px "Helvetica Neue", Helvetica, Arial, sans-serif'; // "This payment was canceled..."
+    // MODIFIED: Added 'bold' to fontStatusMsg
+    const fontStatusMsg = 'bold 28px "Helvetica Neue", Helvetica, Arial, sans-serif'; // "This payment was canceled..."
     const fontLabel = '24px "Helvetica Neue", Helvetica, Arial, sans-serif'; // Labels (Amount, Source, etc.)
     const fontValue = '24px "Helvetica Neue", Helvetica, Arial, sans-serif'; // Values on the right
 
@@ -140,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fillStyle = textColorDark; // Letter in circle is dark
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle'; // Set baseline to middle for vertical centering
-            ctx.fillText(beneficiaryInitial, circleCenterX, circleCenterY); // Removed +5 offset
+            ctx.fillText(beneficiaryInitial, circleCenterX, circleCenterY);
         }
 
         // Recipient Name (Beneficiary Name)
@@ -170,7 +171,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Status Message (Conditional) ---
         if (data.status === 'canceled' && data.status_message.trim() !== '') {
             const exclamationX = imgWidth / 2;
-            const exclamationY = 550;
+            const exclamationY = 550; // Y coordinate for exclamation mark
+            const statusMessageStartY = 590; // Starting Y for the first line of the message (adjusted for spacing)
+            const statusMessageLineHeight = 35; // Line height for the status message
+
             ctx.beginPath();
             ctx.arc(exclamationX, exclamationY, 22, 0, Math.PI * 2);
             ctx.fillStyle = redColor;
@@ -178,25 +182,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
             ctx.font = 'bold 36px Arial, sans-serif';
             ctx.fillStyle = whiteColor;
-            ctx.textAlign = 'center';     // Horizontal centering
-            ctx.textBaseline = 'middle';  // Vertical centering
-            ctx.fillText("!", exclamationX, exclamationY); // Removed '+3' offset
+            ctx.textAlign = 'center';     // Horizontal centering for '!'
+            ctx.textBaseline = 'middle';  // Vertical centering for '!'
+            ctx.fillText("!", exclamationX, exclamationY);
 
-            ctx.font = fontStatusMsg;
+            // MODIFIED: Changed textAlign to 'left' and x coordinate to leftX
+            ctx.font = fontStatusMsg; // This font is now bold
             ctx.fillStyle = textColorDark;
-            ctx.textAlign = 'center'; // Ensure text remains centered
+            ctx.textAlign = 'left';   // Align message to the left
+            ctx.textBaseline = 'alphabetic'; // Reset baseline for general text (default)
+
             const part1 = "This payment was canceled for your protection";
             const part2 = "and was refunded";
 
-            ctx.fillText(part1, imgWidth / 2, 605);
-            ctx.fillText(part2, imgWidth / 2, 645);
+            // Use leftX for X coordinate
+            ctx.fillText(part1, leftX, statusMessageStartY);
+            ctx.fillText(part2, leftX, statusMessageStartY + statusMessageLineHeight);
         }
 
         // --- Bottom Details ---
         ctx.textAlign = 'left'; // Align labels to the left
-        ctx.textBaseline = 'alphabetic';
+        ctx.textBaseline = 'alphabetic'; // Reset baseline for general text
 
-        const leftX = 100;
+        const leftX = 100; // Defined here for clarity, already used above
         const rightX = imgWidth - 100;
         const startYBottom = 750;
         const lineHeight = 40;
