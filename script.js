@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusMessageGroup = document.getElementById('statusMessageGroup');
     const statusMessageInput = document.getElementById('status_message');
 
-    // NEW: Image Upload Elements
+    // Image Upload Elements
     const profileImageInput = document.getElementById('profile_image');
     const clearImageBtn = document.getElementById('clearImageBtn');
     let loadedProfileImage = null; // Variable to store the loaded image object
@@ -50,9 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleStatusMessageInput(); // Call once on load to set initial state and message
     statusSelect.addEventListener('change', toggleStatusMessageInput);
 
-    // NEW: Handle Profile Image Upload
+    // Handle Profile Image Upload
     profileImageInput.addEventListener('change', (event) => {
-        const file = event.target.files[0]; // Corrected: use files[0]
+        const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // NEW: Handle Clear Image Button
+    // Handle Clear Image Button
     clearImageBtn.addEventListener('click', () => {
         loadedProfileImage = null; // Clear the loaded image
         profileImageInput.value = ''; // Clear the file input
@@ -139,8 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.font = fontCircleChar;
             ctx.fillStyle = textColorDark; // Letter in circle is dark
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(beneficiaryInitial, circleCenterX, circleCenterY + 5);
+            ctx.textBaseline = 'middle'; // Set baseline to middle for vertical centering
+            ctx.fillText(beneficiaryInitial, circleCenterX, circleCenterY); // Removed +5 offset
         }
 
         // Recipient Name (Beneficiary Name)
@@ -178,8 +178,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             ctx.font = 'bold 36px Arial, sans-serif';
             ctx.fillStyle = whiteColor;
-            ctx.textAlign = 'center'; // Ensure text remains centered
-            ctx.fillText("!", exclamationX, exclamationY + 3);
+            ctx.textAlign = 'center';     // Horizontal centering
+            ctx.textBaseline = 'middle';  // Vertical centering
+            ctx.fillText("!", exclamationX, exclamationY); // Removed '+3' offset
 
             ctx.font = fontStatusMsg;
             ctx.fillStyle = textColorDark;
